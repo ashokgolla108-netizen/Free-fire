@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashok Universe | GRP FF Hub</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+:root {
+    --bg: #020617;
+    --card-bg: rgba(15, 23, 42, 0.8);
+    --ashok-glow: #8b5cf6;
+    --accent: #10b981;
+    --danger: #f43f5e;
+    --text-main: #f8fafc;
+    --border: rgba(139, 92, 246, 0.3);
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+    background-attachment: fixed;
+    color: var(--text-main);
+    margin: 0;
+    padding: 12px;
+}
+
+.container { max-width: 800px; margin: auto; }
+.screen { display: none; }
+.active { display: block; animation: universeFade 0.6s ease-out; }
+
+@keyframes universeFade {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ASHOK UNIVERSE LOGIN UI */
+.login-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    padding: 40px 25px;
+    border-radius: 24px;
+    margin-top: 60px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(transparent, var(--ashok-glow), transparent 30%);
+    animation: rotate 6s linear infinite;
+    z-index: -1;
+}
+
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.login-inner { background: #020617; padding: 30px; border-radius: 20px; }
+
+.universe-title {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.btn-group { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+
+input, select, button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-size: 14px;
+    margin: 8px 0;
+}
+
+button {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.btn-red { background: linear-gradient(135deg, #ef4444, #991b1b); }
+
+/* Table Alignment */
+table { width: 100%; border-collapse: collapse; }
+th { color: var(--text-dim); font-size: 11px; text-transform: uppercase; padding: 12px 5px; text-align: center; border-bottom: 1px solid var(--border); }
+td { padding: 14px 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+
+.live-badge { background: #ef4444; padding: 3px 10px; border-radius: 5px; font-size: 12px; font-weight: 800; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <div id="screen-login" class="screen active">
+        <div class="login-card">
+            <div class="login-inner">
+                <div style="font-size: 40px; margin-bottom: 10px;">🌌</div>
+                <div class="universe-title">ASHOK UNIVERSE</div>
+                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">GRP Free Fire Tournament Hub</p>
+                <input id="login-user" placeholder="Enter Commander Name">
+                <input id="login-pass" type="password" placeholder="Access Key">
+                <button onclick="handleLogin()" style="margin-top: 15px;">Launch Portal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-main" class="screen">
+        <div class="card" style="border-left: 4px solid #ef4444;">
+            <h3><span class="live-badge">LIVE</span> <span id="current-match-display"></span></h3>
+            <p id="upcoming-match-display" style="color:#94a3b8; font-size:13px; text-align:center"></p>
+        </div>
+
+        <div id="admin-controls" style="display:none">
+            <div class="card">
+                <h2 style="color:var(--ashok-glow); margin-top:0;">Control Center</h2>
+                <p><b>Active:</b> <span id="match-teams-label"></span></p>
+                <div class="admin-grid">
+                    <input id="round1" type="number" placeholder="T1 Score">
+                    <input id="round2" type="number" placeholder="T2 Score">
+                </div>
+                <div class="btn-group">
+                    <button onclick="submitMatch()">Submit Result</button>
+                    <button class="btn-red" onclick="undoLastMatch()">Undo</button>
+                </div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+                <select id="player-select"></select>
+                <input id="kill-count" type="number" placeholder="Kills">
+                <div class="btn-group">
+                    <button onclick="addKills()">Add Kills</button>
+                    <button class="btn-red" onclick="undoLastKills()">Undo</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🏆 Team Leaderboard</h2>
+            <table id="pointsTable">
+                <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>PTS</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🔥 Team Total Kills</h2>
+            <table id="teamKillTable">
+                <thead><tr><th>Team</th><th>Total Kills</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🎯 Top Fraggers</h2>
+            <table id="killTable">
+                <thead><tr><th>Player</th><th>Team</th><th>Kills</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📅 Fixtures</h2>
+            <table id="fixturesTable">
+                <thead><tr><th>Date/Time</th><th>Match</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>⚔️ History</h2>
+            <table id="historyTable">
+                <thead><tr><th>Match</th><th>Score</th><th>Winner</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <button class="btn-red" onclick="location.reload()" style="margin-bottom:40px;">Exit Universe</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDlBDy4xQC1cP7c26Rmh7GC9yehfgqjZhw",
+    authDomain: "grp-freefire-tournament.firebaseapp.com",
+    databaseURL: "https://grp-freefire-tournament-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "grp-freefire-tournament"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const teamsData = {
+    "Pavan": ["Pavan", "Seenappa", "Ashok", "Bangari"],
+    "Nandhu": ["Nandhu", "Tagoor", "Malinga", "Nagesh"],
+    "Chinna": ["Chinna", "Sivalinga", "Bantu", "Bramha"],
+    "Nanda Kishore": ["Nanda Kishore", "Jaswanth", "Anil", "Suresh"],
+    "Narasimha": ["Narasimha", "Babu", "Nithin", "Santhi"]
+};
+
+const fixtures = [
+    {d:"18 Mar",t:"7:00 PM",m:["Pavan","Nanda Kishore"]},
+    {d:"18 Mar",t:"7:30 PM",m:["Nandhu","Chinna"]},
+    {d:"18 Mar",t:"8:00 PM",m:["Pavan","Narasimha"]},
+    {d:"18 Mar",t:"8:30 PM",m:["Nanda Kishore","Nandhu"]},
+    {d:"19 Mar",t:"6:00 PM",m:["Chinna","Narasimha"]},
+    {d:"19 Mar",t:"6:30 PM",m:["Pavan","Nandhu"]},
+    {d:"19 Mar",t:"7:00 PM",m:["Nanda Kishore","Chinna"]},
+    {d:"19 Mar",t:"7:30 PM",m:["Nandhu","Narasimha"]},
+    {d:"19 Mar",t:"8:00 PM",m:["Pavan","Chinna"]},
+    {d:"19 Mar",t:"8:30 PM",m:["Nanda Kishore","Narasimha"]}
+];
+
+let currentMatchIndex = 0;
+
+window.handleLogin = () => {
+    const u = document.getElementById('login-user').value;
+    const p = document.getElementById('login-pass').value;
+    if(u === "Ashok" && p === "7457") {
+        document.getElementById('admin-controls').style.display = 'block';
+        startApp();
+    } else if(u === "GRP" && p === "1234") {
+        startApp();
+    } else alert("Invalid Access Key");
+};
+
+function startApp() {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-main').style.display = 'block';
+    setupAdminUI();
+    syncData();
+    renderFixtures();
+}
+
+function setupAdminUI() {
+    const ps = document.getElementById('player-select');
+    ps.innerHTML = "";
+    Object.keys(teamsData).forEach(t => {
+        teamsData[t].forEach(p => {
+            ps.innerHTML += `<option value="${p}">${p} (${t})</option>`;
+        });
+    });
+}
+
+function syncData() {
+    onValue(ref(db, 'tournaments/Season1'), snap => {
+        const data = snap.val() || {};
+        currentMatchIndex = Object.keys(data.matchHistory || {}).length;
+        updateMatchDisplay();
+        renderLeaderboards(data);
+    });
+}
+
+function updateMatchDisplay() {
+    const match = fixtures[currentMatchIndex] || {m:["Tournament", "Complete"]};
+    const next = fixtures[currentMatchIndex+1] || {m:["-", "-"]};
+    document.getElementById('current-match-display').innerText = `${match.m[0]} vs ${match.m[1]}`;
+    document.getElementById('match-teams-label').innerText = `${match.m[0]} vs ${match.m[1]}`;
+    document.getElementById('upcoming-match-display').innerText = `Next Up: ${next.m[0]} vs ${next.m[1]}`;
+}
+
+window.submitMatch = () => {
+    if(currentMatchIndex >= fixtures.length) return;
+    const r1 = parseInt(document.getElementById("round1").value);
+    const r2 = parseInt(document.getElementById("round2").value);
+    if(isNaN(r1) || isNaN(r2)) return alert("Enter scores");
+    const match = fixtures[currentMatchIndex];
+    let winner = r1 > r2 ? match.m[0] : match.m[1];
+    let loser = r1 > r2 ? match.m[1] : match.m[0];
+    push(ref(db, 'tournaments/Season1/matchHistory'), {
+        team1: match.m[0], team2: match.m[1],
+        round1: r1, round2: r2, winner, loser,
+        timestamp: serverTimestamp()
+    });
+    document.getElementById("round1").value = "";
+    document.getElementById("round2").value = "";
+};
+
+window.undoLastMatch = () => {
+    onValue(ref(db, 'tournaments/Season1/matchHistory'), snap => {
+        const keys = Object.keys(snap.val() || {});
+        if(keys.length > 0) remove(ref(db, 'tournaments/Season1/matchHistory/' + keys[keys.length-1]));
+    }, {onlyOnce: true});
+};
+
+window.addKills = () => {
+    const p = document.getElementById('player-select').value;
+    const k = parseInt(document.getElementById('kill-count').value);
+    if(!k) return alert("Enter kills");
+    push(ref(db, 'tournaments/Season1/killHistory'), {
+        player: p, count: k, team: findTeam(p)
+    });
+    document.getElementById('kill-count').value = "";
+};
+
+window.undoLastKills = () => {
+    onValue(ref(db, 'tournaments/Season1/killHistory'), snap => {
+        const keys = Object.keys(snap.val() || {});
+        if(keys.length > 0) remove(ref(db, 'tournaments/Season1/killHistory/' + keys[keys.length-1]));
+    }, {onlyOnce: true});
+};
+
+function findTeam(player) {
+    for(let t in teamsData) if(teamsData[t].includes(player)) return t;
+}
+
+function renderFixtures() {
+    const tbody = document.querySelector("#fixturesTable tbody");
+    tbody.innerHTML = fixtures.map(f => `
+        <tr>
+            <td>${f.d}<br><small style="color:#94a3b8">${f.t}</small></td>
+            <td>${f.m[0]} vs ${f.m[1]}</td>
+        </tr>`).join('');
+}
+
+function renderLeaderboards(data) {
+    const teamStats = {};
+    Object.keys(teamsData).forEach(t => teamStats[t] = {p:0, w:0, l:0, pts:0});
+    
+    Object.values(data.matchHistory || {}).forEach(m => {
+        teamStats[m.winner].p++; teamStats[m.winner].w++; teamStats[m.winner].pts += 2;
+        teamStats[m.loser].p++; teamStats[m.loser].l++;
+    });
+
+    const pt = document.querySelector("#pointsTable tbody");
+    pt.innerHTML = Object.entries(teamStats).sort((a,b) => b[1].pts - a[1].pts)
+        .map(([n, s]) => `<tr><td>${n}</td><td>${s.p}</td><td>${s.w}</td><td>${s.l}</td><td style="color:var(--accent); font-weight:bold;">${s.pts}</td></tr>`).join('');
+
+    const playerKills = {};
+    Object.values(data.killHistory || {}).forEach(entry => {
+        playerKills[entry.player] = (playerKills[entry.player] || 0) + entry.count;
+    });
+    const kt = document.querySelector("#killTable tbody");
+    kt.innerHTML = Object.entries(playerKills).sort((a,b) => b[1] - a[1])
+        .map(([name, kills]) => `<tr><td>${name}</td><td>${findTeam(name)}</td><td style="color:var(--accent)">${kills}</td></tr>`).join('');
+
+    const teamKills = {};
+    Object.keys(teamsData).forEach(t => teamKills[t] = 0);
+    Object.values(data.killHistory || {}).forEach(entry => {
+        if(teamKills[entry.team] !== undefined) teamKills[entry.team] += entry.count;
+    });
+    const tkt = document.querySelector("#teamKillTable tbody");
+    tkt.innerHTML = Object.entries(teamKills).sort((a,b) => b[1] - a[1])
+        .map(([team, total]) => `<tr><td>${team}</td><td style="color:var(--accent); font-weight:bold;">${total}</td></tr>`).join('');
+
+    const ht = document.querySelector("#historyTable tbody");
+    ht.innerHTML = Object.values(data.matchHistory || {}).reverse()
+        .map(m => `<tr><td>${m.team1} vs ${m.team2}</td><td>${m.round1}-${m.round2}</td><td style="color:var(--accent)">${m.winner}</td></tr>`).join('');
+}
+
+// Step 3: Service Worker Registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
